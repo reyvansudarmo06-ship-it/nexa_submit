@@ -1,0 +1,1 @@
+Route::get('/admin/users', [\App\Http\Controllers\Admin\UserVerificationController::class, 'index'])-
