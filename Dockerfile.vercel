@@ -1,0 +1,49 @@
+FROM dunglas/frankenphp:php8.2-bookworm
+
+WORKDIR /app
+
+# PHP extensions yang umum dibutuhkan Laravel
+RUN install-php-extensions \
+    pdo_mysql \
+    mbstring \
+    bcmath \
+    exif \
+    pcntl \
+    intl \
+    zip
+
+# PHP production configuration
+RUN cp $PHP_INI_DIR/php.ini-production $PHP_INI_DIR/php.ini
+
+# Copy Composer dari image resmi Composer
+COPY --from=composer:2 /usr/bin/composer /usr/bin/composer
+
+# Copy project
+COPY . .
+
+# Install PHP dependencies
+RUN composer install \
+    --no-dev \
+    --optimize-autoloader \
+    --no-interaction \
+    --prefer-dist
+
+# Install Node.js untuk build Vite
+RUN apt-get update && \
+    apt-get install -y --no-install-recommends nodejs npm && \
+    rm -rf /var/lib/apt/lists/*
+
+# Build frontend
+RUN npm ci && npm run build
+
+# Permission Laravel
+RUN mkdir -p storage/framework/cache \
+    storage/framework/sessions \
+    storage/framework/views \
+    storage/logs \
+    bootstrap/cache && \
+    chmod -R 775 storage bootstrap/cache
+
+# Vercel memberikan PORT secara otomatis.
+# FrankenPHP melayani folder public Laravel.
+CMD ["sh", "-c", "frankenphp php-server --listen :${PORT:-80} --root /app/public"]
