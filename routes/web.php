@@ -5,9 +5,6 @@ use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\DashboardController;
 use App\Models\Submission;
 
-// Admin
-use App\Http\Controllers\Admin\AdminDashboardController;
-
 // Notification
 use App\Http\Controllers\NotificationController;
 
@@ -56,7 +53,7 @@ Route::get('/', function () {
 */
 
 Route::get('/dashboard', [DashboardController::class, 'index'])
-    ->middleware(['auth', 'verified.account', 'verified'])
+    ->middleware('auth')
     ->name('dashboard');
 
 
@@ -77,7 +74,6 @@ Route::get('/ai-test', [GeminiTestController::class, 'test']);
 
 Route::middleware([
     'auth',
-    'verified.account',
     'role:student',
 ])->group(function () {
 
@@ -262,7 +258,6 @@ Route::middleware('auth')->group(function () {
 
 Route::middleware([
     'auth',
-    'verified.account',
     'role:teacher',
 ])->group(function () {
 
@@ -351,10 +346,7 @@ Route::middleware('auth')->group(function () {
 |--------------------------------------------------------------------------
 */
 
-Route::middleware([
-    'auth',
-    'verified.account',
-])->group(function () {
+Route::middleware('auth')->group(function () {
 
     Route::get(
         '/profile',
@@ -370,41 +362,6 @@ Route::middleware([
         '/profile',
         [ProfileController::class, 'destroy']
     )->name('profile.destroy');
-
-});
-
-
-/* 
-|--------------------------------------------------------------------------
-| ADMIN
-|--------------------------------------------------------------------------
-*/
-
-Route::middleware([
-    'auth',
-    'verified.account',
-    'admin',
-])->group(function () {
-
-    Route::get(
-        '/admin',
-        [AdminDashboardController::class, 'index']
-    )->name('admin.dashboard');
-
-    Route::get(
-        '/admin/users',
-        [\App\Http\Controllers\Admin\UserVerificationController::class, 'index']
-    )->name('admin.users.index');
-
-    Route::post(
-        '/admin/users/{user}/verify',
-        [\App\Http\Controllers\Admin\UserVerificationController::class, 'verify']
-    )->name('admin.users.verify');
-
-    Route::post(
-        '/admin/users/{user}/reject',
-        [\App\Http\Controllers\Admin\UserVerificationController::class, 'reject']
-    )->name('admin.users.reject');
 
 });
 

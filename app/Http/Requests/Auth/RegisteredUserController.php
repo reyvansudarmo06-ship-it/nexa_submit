@@ -20,13 +20,15 @@ class RegisteredUserController extends Controller
         return view('auth.register');
     }
 
-    /**
-     * @throws ValidationException
-     */
     public function store(Request $request): RedirectResponse
     {
         $request->validate([
-            'name' => ['required', 'string', 'max:255'],
+            'name' => [
+                'required',
+                'string',
+                'max:255',
+            ],
+
             'email' => [
                 'required',
                 'string',
@@ -35,15 +37,31 @@ class RegisteredUserController extends Controller
                 'max:255',
                 'unique:' . User::class,
             ],
-            'role' => ['required', 'in:student,teacher'],
-            'birth_day' => ['required', 'integer', 'between:1,31'],
-            'birth_month' => ['required', 'integer', 'between:1,12'],
+
+            'role' => [
+                'required',
+                'in:student,teacher',
+            ],
+
+            'birth_day' => [
+                'required',
+                'integer',
+                'between:1,31',
+            ],
+
+            'birth_month' => [
+                'required',
+                'integer',
+                'between:1,12',
+            ],
+
             'birth_year' => [
                 'required',
                 'integer',
                 'min:1950',
                 'max:' . now()->year,
             ],
+
             'password' => [
                 'required',
                 'confirmed',
@@ -51,7 +69,7 @@ class RegisteredUserController extends Controller
             ],
         ]);
 
-        if (! checkdate(
+        if (!checkdate(
             (int) $request->birth_month,
             (int) $request->birth_day,
             (int) $request->birth_year

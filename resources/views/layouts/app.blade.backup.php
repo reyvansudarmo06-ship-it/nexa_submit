@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="{{ str_replace('_', '-', app()->getLocale()) }}">
 
@@ -31,8 +30,6 @@
 
             background: #070b16;
             color: #e8ecf7;
-
-            overflow-x: hidden;
         }
 
         a {
@@ -44,10 +41,6 @@
         textarea,
         select {
             font: inherit;
-        }
-
-        button {
-            -webkit-tap-highlight-color: transparent;
         }
 
         ::selection {
@@ -133,7 +126,6 @@
 
         .nexa-logo {
             position: relative;
-            z-index: 1;
 
             min-height: 88px;
 
@@ -154,8 +146,6 @@
         .nexa-brand-mark {
             width: 42px;
             height: 42px;
-
-            flex-shrink: 0;
 
             border-radius: 14px;
 
@@ -212,9 +202,6 @@
         ===================================================== */
 
         .nexa-user {
-            position: relative;
-            z-index: 1;
-
             padding: 18px;
         }
 
@@ -302,23 +289,16 @@
 
         .nexa-menu {
             position: relative;
-            z-index: 1;
 
             flex: 1;
-            min-height: 0;
 
             padding: 5px 14px 15px;
 
             overflow-y: auto;
-            overflow-x: hidden;
         }
 
         .nexa-menu::-webkit-scrollbar {
             width: 4px;
-        }
-
-        .nexa-menu::-webkit-scrollbar-track {
-            background: transparent;
         }
 
         .nexa-menu::-webkit-scrollbar-thumb {
@@ -430,8 +410,6 @@
             align-items: center;
             justify-content: center;
 
-            flex-shrink: 0;
-
             border-radius: 9px;
 
             background: rgba(255,255,255,.035);
@@ -491,18 +469,9 @@
         ===================================================== */
 
         .nexa-logout {
-            position: relative;
-            z-index: 1;
-
             padding: 13px 14px;
 
             border-top: 1px solid rgba(255,255,255,.06);
-
-            flex-shrink: 0;
-        }
-
-        .nexa-logout form {
-            margin: 0;
         }
 
         .nexa-logout button {
@@ -551,8 +520,6 @@
             min-height: 100vh;
 
             margin-left: 278px;
-
-            min-width: 0;
         }
 
         /* =====================================================
@@ -574,8 +541,6 @@
             align-items: center;
             justify-content: space-between;
 
-            gap: 20px;
-
             background:
                 rgba(7,11,22,.78);
 
@@ -587,8 +552,6 @@
 
         .nexa-header-title {
             min-width: 0;
-
-            overflow: hidden;
         }
 
         .nexa-header-title h2 {
@@ -600,10 +563,6 @@
             font-weight: 850;
 
             letter-spacing: -.4px;
-
-            overflow: hidden;
-            text-overflow: ellipsis;
-            white-space: nowrap;
         }
 
         .nexa-header-title p {
@@ -619,8 +578,6 @@
             align-items: center;
 
             gap: 14px;
-
-            flex-shrink: 0;
         }
 
         /* =====================================================
@@ -636,8 +593,6 @@
             display: flex;
             align-items: center;
             justify-content: center;
-
-            flex-shrink: 0;
 
             border-radius: 13px;
 
@@ -714,17 +669,9 @@
 
         .nexa-top-user-info {
             text-align: right;
-
-            min-width: 0;
         }
 
         .nexa-top-user-name {
-            max-width: 170px;
-
-            overflow: hidden;
-            text-overflow: ellipsis;
-            white-space: nowrap;
-
             color: #f5f7fb;
 
             font-size: 12px;
@@ -750,8 +697,6 @@
             display: flex;
             align-items: center;
             justify-content: center;
-
-            flex-shrink: 0;
 
             border-radius: 12px;
 
@@ -781,8 +726,6 @@
             min-height: calc(100vh - 78px);
 
             padding: 32px;
-
-            overflow: hidden;
 
             background:
                 radial-gradient(
@@ -824,7 +767,6 @@
 
         .nexa-alert {
             position: relative;
-            z-index: 2;
 
             max-width: 1250px;
 
@@ -866,19 +808,14 @@
             border: 1px solid rgba(244,63,94,.2);
         }
 
-        .nexa-error ul {
-            color: #fda4af;
-        }
-
         /* =====================================================
            GENERIC FORM ELEMENTS
+           BIKIN HALAMAN LAMA IKUT KELIHATAN LEBIH SERAGAM
         ===================================================== */
 
         .nexa-content input,
         .nexa-content textarea,
         .nexa-content select {
-            max-width: 100%;
-
             background: rgba(255,255,255,.035);
             color: #e5e7eb;
 
@@ -888,18 +825,13 @@
 
             outline: none;
 
-            transition:
-                border-color .2s ease,
-                box-shadow .2s ease,
-                background .2s ease;
+            transition: .2s;
         }
 
         .nexa-content input:focus,
         .nexa-content textarea:focus,
         .nexa-content select:focus {
             border-color: rgba(124,92,255,.55);
-
-            background: rgba(255,255,255,.045);
 
             box-shadow:
                 0 0 0 3px rgba(124,92,255,.08);
@@ -908,11 +840,6 @@
         .nexa-content input::placeholder,
         .nexa-content textarea::placeholder {
             color: #59657b;
-        }
-
-        .nexa-content select option {
-            background: #111827;
-            color: #e5e7eb;
         }
 
         /* =====================================================
@@ -1029,10 +956,6 @@
                 display: none;
             }
 
-            .nexa-topbar-right {
-                gap: 8px;
-            }
-
             .nexa-top-user {
                 padding-left: 8px;
             }
@@ -1058,10 +981,6 @@
                 margin-left: 62px;
             }
 
-            .nexa-topbar {
-                padding: 0 11px;
-            }
-
             .nexa-top-notification {
                 width: 37px;
                 height: 37px;
@@ -1070,10 +989,6 @@
             .nexa-top-avatar {
                 width: 36px;
                 height: 36px;
-            }
-
-            .nexa-content {
-                padding: 14px;
             }
         }
     </style>
@@ -1310,7 +1225,6 @@
                 <span>Notifikasi</span>
 
                 @if($unreadNotifications > 0)
-
                     <span
                         style="
                             margin-left:auto;
@@ -1325,12 +1239,10 @@
                             display:flex;
                             align-items:center;
                             justify-content:center;
-                            flex-shrink:0;
                         "
                     >
                         {{ $unreadNotifications > 99 ? '99+' : $unreadNotifications }}
                     </span>
-
                 @endif
 
             </a>
