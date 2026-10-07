@@ -9,24 +9,20 @@ class NexaAiService
 {
     protected string $url;
 
-public function __construct()
-{
-    $this->url = rtrim(
-        env('NEXA_AI_URL', 'http://127.0.0.1:5001'),
-        '/'
-    );
-}
-    /*
-    |--------------------------------------------------------------------------
-    | ANALYZE TEXT
-    |--------------------------------------------------------------------------
-    */
+    public function __construct()
+    {
+        $this->url = rtrim(
+            env('NEXA_AI_URL', 'http://127.0.0.1:5001'),
+            '/'
+        );
+    }
 
     public function analyze(
         string $instruction,
         string $answer
     ): array {
         $response = Http::timeout(120)
+            ->connectTimeout(10)
             ->post($this->url . '/analyze', [
                 'instruction' => $instruction,
                 'answer' => $answer,
@@ -34,29 +30,20 @@ public function __construct()
 
         if (!$response->successful()) {
             throw new RuntimeException(
-                'NEXA AI API Error: ' . $response->body()
+                'NEXA AI error: ' . $response->body()
             );
         }
 
         $data = $response->json();
 
-        if (
-            !is_array($data) ||
-            !($data['success'] ?? false)
-        ) {
+        if (!is_array($data) || !($data['success'] ?? false)) {
             throw new RuntimeException(
-                'NEXA AI menghasilkan response tidak valid.'
+                $data['message'] ?? 'Response NEXA AI tidak valid.'
             );
         }
 
         return $data;
     }
-
-    /*
-    |--------------------------------------------------------------------------
-    | ANALYZE FILE
-    |--------------------------------------------------------------------------
-    */
 
     public function analyzeFile(
         string $filePath,
@@ -69,6 +56,7 @@ public function __construct()
         }
 
         $response = Http::timeout(180)
+            ->connectTimeout(10)
             ->post($this->url . '/analyze-file', [
                 'file_path' => $filePath,
                 'instruction' => $instruction,
@@ -76,56 +64,46 @@ public function __construct()
 
         if (!$response->successful()) {
             throw new RuntimeException(
-                'NEXA AI File API Error: ' . $response->body()
+                'NEXA AI File error: ' . $response->body()
             );
         }
 
         $data = $response->json();
 
-        if (
-            !is_array($data) ||
-            !($data['success'] ?? false)
-        ) {
+        if (!is_array($data) || !($data['success'] ?? false)) {
             throw new RuntimeException(
-                'NEXA AI menghasilkan response file tidak valid.'
+                $data['message'] ?? 'Response file NEXA AI tidak valid.'
             );
         }
 
         return $data;
     }
-    /*
-|--------------------------------------------------------------------------
-| CHAT
-|--------------------------------------------------------------------------
-*/
 
-public function chat(
-    string $instruction,
-    string $message
-): array {
-    $response = Http::timeout(120)
-        ->post($this->url . '/chat', [
-            'instruction' => $instruction,
-            'message' => $message,
-        ]);
+    public function chat(
+        string $instruction,
+        string $message
+    ): array {
+        $response = Http::timeout(120)
+            ->connectTimeout(10)
+            ->post($this->url . '/chat', [
+                'instruction' => $instruction,
+                'message' => $message,
+            ]);
 
-    if (!$response->successful()) {
-        throw new RuntimeException(
-            'NEXA AI Chat API Error: ' . $response->body()
-        );
+        if (!$response->successful()) {
+            throw new RuntimeException(
+                'NEXA AI Chat error: ' . $response->body()
+            );
+        }
+
+        $data = $response->json();
+
+        if (!is_array($data) || !($data['success'] ?? false)) {
+            throw new RuntimeException(
+                $data['message'] ?? 'Response chat NEXA AI tidak valid.'
+            );
+        }
+
+        return $data;
     }
-
-    $data = $response->json();
-
-    if (
-        !is_array($data) ||
-        !($data['success'] ?? false)
-    ) {
-        throw new RuntimeException(
-            'NEXA AI menghasilkan response chat tidak valid.'
-        );
-    }
-
-    return $data;
-}
 }
