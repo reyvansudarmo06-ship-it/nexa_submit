@@ -2,36 +2,74 @@
 
 namespace App\Services;
 
+use Illuminate\Support\Facades\Http;
 use RuntimeException;
 
-class NexaAIService
+class NexaAiService
 {
-    protected GeminiService $gemini;
+    protected string $url = 'http://127.0.0.1:5001';
 
-    public function __construct(GeminiService $gemini)
-    {
-        $this->gemini = $gemini;
+    public function analyze(
+        string $instruction,
+        string $answer
+    ): array {
+        $response = Http::timeout(120)
+            ->connectTimeout(10)
+            ->post($this->url . '/analyze', [
+                'instruction' => $instruction,
+                'answer' => $answer,
+            ]);
+
+        if (!$response->successful()) {
+            throw new RuntimeException(
+                'NEXA AI lokal error: ' . $response->body()
+            );
+        }
+
+        $data = $response->json();
+
+        if (!is_array($data) || !($data['success'] ?? false)) {
+            throw new RuntimeException(
+                $data['message'] ?? 'NEXA AI lokal memberikan response tidak valid.'
+            );
+        }
+
+        return $data;
     }
 
     public function generate(
         string $prompt,
         bool $webSearch = false
     ): string {
-        try {
-            return $this->gemini->generate($prompt);
-
-        } catch (\Throwable $e) {
-
-            \Log::warning('NEXA AI Provider Error', [
-                'provider' => 'gemini',
-                'web_search' => $webSearch,
-                'error' => $e->getMessage(),
+        $response = Http::timeout(120)
+            ->connectTimeout(10)
+            ->post($this->url . '/chat', [
+                'instruction' => $prompt,
+                'message' => $prompt,
             ]);
 
+        if (!$response->successful()) {
             throw new RuntimeException(
-                'Provider AI NEXA sedang tidak tersedia: '
-                . $e->getMessage()
+                'NEXA AI lokal error: ' . $response->body()
             );
         }
+
+        $data = $response->json();
+
+        if (!is_array($data) || !($data['success'] ?? false)) {
+            throw new RuntimeException(
+                $data['message'] ?? 'NEXA AI lokal memberikan response tidak valid.'
+            );
+        }
+
+        $result = trim($data['response'] ?? '');
+
+        if ($result === '') {
+            throw new RuntimeException(
+                'NEXA AI lokal tidak memberikan jawaban.'
+            );
+        }
+
+        return $result;
     }
 }

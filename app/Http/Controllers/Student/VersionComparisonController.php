@@ -6,7 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Submission;
 use App\Models\SubmissionVersion;
 use App\Models\VersionComparison;
-use App\Services\GeminiService;
+use App\Services\NexaAiService;
 use Illuminate\Http\JsonResponse;
 use Throwable;
 
@@ -16,7 +16,7 @@ class VersionComparisonController extends Controller
         Submission $submission,
         SubmissionVersion $fromVersion,
         SubmissionVersion $toVersion,
-        GeminiService $gemini
+        NexaAiService $nexaAI
     ): JsonResponse {
         try {
 
@@ -94,7 +94,7 @@ class VersionComparisonController extends Controller
 
             /*
             |--------------------------------------------------------------------------
-            | PROMPT GEMINI
+            | PROMPT NEXA AI
             |--------------------------------------------------------------------------
             */
 
@@ -238,11 +238,11 @@ PROMPT;
 
             /*
             |--------------------------------------------------------------------------
-            | CALL GEMINI
+            | CALL NEXA AI
             |--------------------------------------------------------------------------
             */
 
-            $result = $gemini->generate($prompt);
+            $result = $nexaAI->generate($prompt);
 
             $result = trim($result);
 
@@ -268,7 +268,7 @@ PROMPT;
 
             /*
             |--------------------------------------------------------------------------
-            | VALIDATE GEMINI RESPONSE
+            | VALIDATE NEXA AI RESPONSE
             |--------------------------------------------------------------------------
             */
 
@@ -276,7 +276,7 @@ PROMPT;
                 return response()->json([
                     'success' => false,
                     'message' =>
-                        'Gemini mengembalikan JSON yang tidak valid.',
+                        'NEXA AI mengembalikan JSON yang tidak valid.',
                     'raw' => $result,
                 ], 422);
             }

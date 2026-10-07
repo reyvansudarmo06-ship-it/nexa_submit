@@ -5,7 +5,7 @@ namespace App\Http\Controllers\Student;
 use App\Http\Controllers\Controller;
 use App\Models\Assignment;
 use App\Models\AiInstructionAnalysis;
-use App\Services\GeminiService;
+use App\Services\NexaAiService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\Log;
 use Throwable;
@@ -27,7 +27,7 @@ class AiInstructionController extends Controller
 
     public function analyze(
         Assignment $assignment,
-        GeminiService $gemini
+        NexaAiService $nexaAI
     ): JsonResponse {
 
         if ($assignment->status !== 'active') {
@@ -91,7 +91,7 @@ Aturan:
 - Fokus hanya membantu memahami instruksi.
 PROMPT;
 
-            $result = $gemini->generate($prompt);
+           $result = $nexaAI->generate($prompt);
 
             $cleanJson = trim($result);
 

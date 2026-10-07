@@ -13,10 +13,6 @@ return [
     | a conventional file to locate the various service credentials.
     |
     */
-'gemini' => [
-    'key' => env('GEMINI_API_KEY'),
-    'model' => env('GEMINI_MODEL', 'gemini-2.5-flash'),
-],
 'openai' => [
     'key' => env('OPENAI_API_KEY'),
     'model' => env('OPENAI_MODEL', 'gpt-5.6-luna'),

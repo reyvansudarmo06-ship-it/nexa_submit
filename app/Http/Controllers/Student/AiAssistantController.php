@@ -5,7 +5,7 @@ namespace App\Http\Controllers\Student;
 use App\Http\Controllers\Controller;
 use App\Models\AiConversation;
 use App\Models\Assignment;
-use App\Services\GeminiService;
+use App\Services\AI\NexaAiService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 use Throwable;
@@ -36,29 +36,16 @@ class AiAssistantController extends Controller
         );
     }
 
-
     public function ask(
         Request $request,
-        GeminiService $gemini
+        NexaAiService $nexaAi
     ) {
-        /*
-        |--------------------------------------------------------------------------
-        | BATAS WAKTU PHP
-        |--------------------------------------------------------------------------
-        |
-        | Gemini kadang membutuhkan waktu lebih dari 60 detik.
-        | Naikkan batas controller menjadi 180 detik.
-        |
-        */
-
         set_time_limit(180);
-
 
         $validated = $request->validate([
             'message' => 'required|string|max:4000',
             'assignment_id' => 'nullable|exists:assignments,id',
         ]);
-
 
         try {
 
@@ -81,11 +68,9 @@ class AiAssistantController extends Controller
 
                 if (!$assignment) {
 
-                    $message =
-                        'Tugas yang dipilih tidak tersedia.';
+                    $message = 'Tugas yang dipilih tidak tersedia.';
 
                     if ($request->expectsJson()) {
-
                         return response()->json([
                             'success' => false,
                             'message' => $message,
@@ -97,7 +82,6 @@ class AiAssistantController extends Controller
                     ]);
                 }
             }
-
 
             /*
             |--------------------------------------------------------------------------
@@ -128,28 +112,23 @@ Deadline:
 CONTEXT;
             }
 
-
             /*
             |--------------------------------------------------------------------------
-            | PROMPT NEXA AI
+            | INSTRUKSI NEXA AI
             |--------------------------------------------------------------------------
             */
 
-            $prompt = <<<PROMPT
+            $instruction = <<<INSTRUCTION
 Kamu adalah NEXA AI Assistant di aplikasi NEXA SUBMIT.
 
 Kamu membantu siswa memahami tugas sekolah, merencanakan pengerjaan,
 memeriksa pemahaman instruksi, dan memberikan arahan belajar.
 
-Kamu BUKAN mesin untuk mengerjakan tugas siswa secara langsung.
+Kamu bukan mesin untuk mengerjakan tugas siswa secara langsung.
 
 Konteks tugas:
 
 {$assignmentContext}
-
-Pertanyaan siswa:
-
-{$validated['message']}
 
 Aturan:
 - Jawab dalam bahasa Indonesia yang natural dan mudah dipahami siswa.
@@ -162,17 +141,42 @@ Aturan:
 - Jika siswa meminta kamu mengerjakan seluruh tugas, bantu dengan penjelasan dan langkah pengerjaan, bukan menggantikan siswa.
 - Jika konteks tugas tidak tersedia atau informasinya kurang, katakan dengan jujur.
 - Jawaban harus ringkas tetapi tetap membantu.
-PROMPT;
-
+INSTRUCTION;
 
             /*
             |--------------------------------------------------------------------------
-            | PANGGIL GEMINI
+            | PERTANYAAN SISWA
             |--------------------------------------------------------------------------
             */
 
-            $response = $gemini->generate($prompt);
+            $message = $validated['message'];
 
+            /*
+            |--------------------------------------------------------------------------
+            | PANGGIL NEXA AI LOCAL CHAT
+            |--------------------------------------------------------------------------
+            */
+
+            $result = $nexaAi->chat(
+                $instruction,
+                $message
+            );
+
+            /*
+            |--------------------------------------------------------------------------
+            | AMBIL RESPONSE
+            |--------------------------------------------------------------------------
+            */
+
+            $response = $result['response'] ?? '';
+
+            if (!is_string($response) || trim($response) === '') {
+                throw new \RuntimeException(
+                    'NEXA AI tidak memberikan response chat.'
+                );
+            }
+
+            $response = trim($response);
 
             /*
             |--------------------------------------------------------------------------
@@ -188,7 +192,7 @@ PROMPT;
                     $assignment?->id,
 
                 'message' =>
-                    $validated['message'],
+                    $message,
 
                 'response' =>
                     $response,
@@ -196,7 +200,6 @@ PROMPT;
                 'status' =>
                     'completed',
             ]);
-
 
             /*
             |--------------------------------------------------------------------------
@@ -226,7 +229,6 @@ PROMPT;
                 ]);
             }
 
-
             /*
             |--------------------------------------------------------------------------
             | REQUEST BIASA
@@ -240,20 +242,24 @@ PROMPT;
                     $response
                 );
 
-
         } catch (Throwable $e) {
 
             Log::error(
-                'NEXA AI Assistant Error',
+                'NEXA LOCAL AI Assistant Error',
                 [
                     'user_id' =>
                         auth()->id(),
 
                     'error' =>
                         $e->getMessage(),
+
+                    'file' =>
+                        $e->getFile(),
+
+                    'line' =>
+                        $e->getLine(),
                 ]
             );
-
 
             /*
             |--------------------------------------------------------------------------
@@ -267,10 +273,9 @@ PROMPT;
                     'success' => false,
 
                     'message' =>
-                        'NEXA AI sedang mengalami masalah. Silakan coba lagi.',
+                        'NEXA AI lokal sedang mengalami masalah. Silakan coba lagi.',
                 ], 500);
             }
-
 
             /*
             |--------------------------------------------------------------------------
@@ -281,7 +286,7 @@ PROMPT;
             return back()
                 ->withErrors([
                     'message' =>
-                        'NEXA AI sedang mengalami masalah. Silakan coba lagi.',
+                        'NEXA AI lokal sedang mengalami masalah. Silakan coba lagi.',
                 ])
                 ->withInput();
         }

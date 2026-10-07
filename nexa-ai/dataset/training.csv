@@ -1,0 +1,8 @@
+instruction,answer,instruction_score,completeness_score,quality_score,neatness_score
+"Buat aplikasi CRUD Laravel","Membuat aplikasi CRUD Laravel dengan login dan database",90,85,85,90
+"Buat aplikasi CRUD Laravel","Membuat halaman login saja",40,30,60,80
+"Buat aplikasi CRUD Laravel","Membuat CRUD lengkap dengan create read update delete",100,95,90,90
+"Buat aplikasi login Laravel","Membuat login dan register menggunakan Laravel",95,90,85,90
+"Buat aplikasi login Laravel","Membuat halaman dashboard tanpa login",30,25,60,75
+"Buat dokumentasi aplikasi","Dokumentasi berisi instalasi penggunaan fitur dan konfigurasi",95,95,90,90
+"Buat dokumentasi aplikasi","Hanya menjelaskan nama aplikasi",35,30,55,70

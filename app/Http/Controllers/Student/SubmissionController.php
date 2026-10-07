@@ -120,7 +120,7 @@ class SubmissionController extends Controller
         | Setelah submission berhasil disimpan, langsung jalankan
         | analisis AI menggunakan controller AI yang sudah ada.
         |
-        | Kalau Gemini sedang error / quota habis, submission TETAP
+        | Kalau NEXA AI sedang error / quota habis, submission TETAP
         | dianggap berhasil. Error hanya dicatat ke log.
         |
         */
