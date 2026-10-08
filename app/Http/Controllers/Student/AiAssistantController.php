@@ -283,12 +283,11 @@ INSTRUCTION;
             |--------------------------------------------------------------------------
             */
 
-            return back()
-                ->withErrors([
-                    'message' =>
-                        'NEXA AI lokal sedang mengalami masalah. Silakan coba lagi.',
-                ])
-                ->withInput();
+           return back()
+    ->withErrors([
+        'message' => 'ERROR ASLI: ' . $e->getMessage(),
+    ])
+    ->withInput();
         }
     }
 }
