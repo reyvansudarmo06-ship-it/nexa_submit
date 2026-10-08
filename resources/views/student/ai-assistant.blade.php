@@ -1,6 +1,7 @@
 <x-app-layout>
 
     <style>
+
         /* =========================================================
            NEXA AI ASSISTANT
         ========================================================= */
@@ -9,6 +10,7 @@
             min-height: calc(100vh - 80px);
             padding: 28px;
             color: #f8fafc;
+
             background:
                 radial-gradient(
                     circle at 90% 0%,
@@ -36,8 +38,10 @@
         .assistant-hero {
             position: relative;
             overflow: hidden;
+
             padding: 30px;
             margin-bottom: 22px;
+
             border-radius: 23px;
             border: 1px solid rgba(99,102,241,.22);
 
@@ -60,6 +64,7 @@
 
         .assistant-hero::before {
             content: "";
+
             position: absolute;
 
             width: 270px;
@@ -142,7 +147,6 @@
             color: #94a3b8;
 
             font-size: 13px;
-
             line-height: 1.6;
         }
 
@@ -410,6 +414,7 @@
         }
 
         @keyframes messageIn {
+
             from {
                 opacity: 0;
                 transform: translateY(5px);
@@ -419,6 +424,7 @@
                 opacity: 1;
                 transform: translateY(0);
             }
+
         }
 
         .message.user {
@@ -438,7 +444,7 @@
             width: fit-content;
 
             max-width:
-                min(68%, 620px);
+                min(88%, 850px);
 
             min-width: 0;
         }
@@ -453,7 +459,7 @@
             width: fit-content;
 
             max-width:
-                min(68%, 620px);
+                min(75%, 700px);
         }
 
         .message.ai .message-wrap {
@@ -466,7 +472,7 @@
             width: fit-content;
 
             max-width:
-                min(68%, 620px);
+                min(88%, 850px);
         }
 
         .message-label {
@@ -486,7 +492,7 @@
         ========================================================= */
 
         .bubble {
-            display: inline-block;
+            display: block;
 
             width: fit-content;
 
@@ -495,19 +501,21 @@
             box-sizing: border-box;
 
             padding:
-                10px 13px;
+                12px 15px;
 
-            border-radius: 14px;
+            border-radius: 15px;
 
-            font-size: 11.5px;
+            font-size: 12px;
 
-            line-height: 1.6;
+            line-height: 1.7;
 
-            white-space: pre-wrap;
+            white-space: normal;
 
             overflow-wrap: anywhere;
 
-            word-break: break-word;
+            word-break: normal;
+
+            text-align: left;
         }
 
         .message.user .bubble {
@@ -537,7 +545,17 @@
 
             border-bottom-left-radius: 5px;
 
-            text-align: justify;
+            text-align: left;
+        }
+
+        .message.ai .bubble strong {
+            color: #f8fafc;
+
+            font-weight: 800;
+        }
+
+        .message.ai .bubble br {
+            line-height: 1.7;
         }
 
 
@@ -631,6 +649,7 @@
         }
 
         @keyframes thinkingDot {
+
             0%,
             60%,
             100% {
@@ -642,6 +661,7 @@
                 opacity: 1;
                 transform: translateY(-3px);
             }
+
         }
 
 
@@ -890,7 +910,7 @@
 
                 width: fit-content;
 
-                max-width: 86%;
+                max-width: 90%;
             }
 
             .bubble {
@@ -898,6 +918,8 @@
                     10px 12px;
 
                 font-size: 11.5px;
+
+                line-height: 1.65;
             }
 
             .chat-form {
@@ -954,7 +976,7 @@
             .message.user .message-wrap,
             .message.ai .message-wrap {
 
-                max-width: 90%;
+                max-width: 94%;
             }
 
             .bubble {
@@ -962,8 +984,11 @@
                     9px 11px;
 
                 font-size: 11px;
+
+                line-height: 1.65;
             }
         }
+
     </style>
 
 
@@ -1119,7 +1144,7 @@
                                                 KAMU
                                             </div>
 
-                                            <div class="bubble">
+                                            <div class="bubble js-message-content">
                                                 {{ $conversation->message }}
                                             </div>
 
@@ -1138,7 +1163,7 @@
                                                 NEXA AI
                                             </div>
 
-                                            <div class="bubble">
+                                            <div class="bubble js-message-content">
                                                 {{ $conversation->response }}
                                             </div>
 
@@ -1385,16 +1410,19 @@
                         function () {
 
                             chatBody.scrollTo({
+
                                 top:
                                     chatBody.scrollHeight,
 
                                 behavior:
                                     'smooth'
+
                             });
 
                         },
                         50
                     );
+
                 }
 
 
@@ -1422,10 +1450,92 @@
 
                 function formatMessage(value) {
 
-                    return escapeHtml(
-                        value
-                    );
+                    let text =
+                        escapeHtml(
+                            value ?? ''
+                        );
+
+                    /*
+                     * **teks** menjadi bold
+                     */
+                    text =
+                        text.replace(
+                            /\*\*(.*?)\*\*/g,
+                            '<strong>$1</strong>'
+                        );
+
+                    /*
+                     * ### Judul
+                     */
+                    text =
+                        text.replace(
+                            /^### (.*)$/gm,
+                            '<strong>$1</strong>'
+                        );
+
+                    /*
+                     * ## Judul
+                     */
+                    text =
+                        text.replace(
+                            /^## (.*)$/gm,
+                            '<strong>$1</strong>'
+                        );
+
+                    /*
+                     * # Judul
+                     */
+                    text =
+                        text.replace(
+                            /^# (.*)$/gm,
+                            '<strong>$1</strong>'
+                        );
+
+                    /*
+                     * Ganti newline menjadi HTML
+                     */
+                    text =
+                        text.replace(
+                            /\n/g,
+                            '<br>'
+                        );
+
+                    return text;
                 }
+
+
+                /* =================================================
+                   FORMAT CHAT HISTORY
+                ================================================= */
+
+                function formatExistingMessages() {
+
+                    const messages =
+                        document.querySelectorAll(
+                            '.js-message-content'
+                        );
+
+                    messages.forEach(
+                        function (element) {
+
+                            const originalText =
+                                element.textContent;
+
+                            element.innerHTML =
+                                formatMessage(
+                                    originalText
+                                );
+
+                        }
+                    );
+
+                }
+
+
+                /*
+                 * Format chat lama dari database
+                 */
+                formatExistingMessages();
 
 
                 /* =================================================
@@ -1443,6 +1553,7 @@
 
                     ajaxError.innerHTML =
                         '';
+
                 }
 
 
@@ -1466,6 +1577,7 @@
                         'block';
 
                     scrollToBottom();
+
                 }
 
 
@@ -1482,8 +1594,10 @@
                     }
 
                     if (emptyChat) {
+
                         emptyChat.style.display =
                             'none';
+
                     }
 
 
@@ -1522,6 +1636,7 @@
                     );
 
                     scrollToBottom();
+
                 }
 
 
@@ -1573,6 +1688,7 @@
                     );
 
                     scrollToBottom();
+
                 }
 
 
@@ -1590,6 +1706,7 @@
                         'block';
 
                     scrollToBottom();
+
                 }
 
 
@@ -1605,6 +1722,7 @@
 
                     thinkingContainer.style.display =
                         'none';
+
                 }
 
 
@@ -1634,6 +1752,7 @@
                             '➤';
 
                     }
+
                 }
 
 
@@ -1666,6 +1785,7 @@
                                 messageInput?.focus();
 
                                 return;
+
                             }
 
 
@@ -1673,7 +1793,8 @@
 
 
                             /*
-                             * Simpan teks sebelum textarea dikosongkan.
+                             * Simpan pesan sebelum textarea
+                             * dikosongkan.
                              */
 
                             const sentMessage =
@@ -1681,8 +1802,7 @@
 
 
                             /*
-                             * Tampilkan pesan user
-                             * langsung di layar.
+                             * Tampilkan pesan user.
                              */
 
                             addUserMessage(
@@ -1715,8 +1835,9 @@
 
                                 const response =
                                     await fetch(
-                                        form.action,
+                                        '/ai-assistant/ask',
                                         {
+
                                             method:
                                                 'POST',
 
@@ -1738,23 +1859,27 @@
 
                                             body:
                                                 JSON.stringify({
+
                                                     message:
                                                         sentMessage,
 
                                                     assignment_id:
                                                         assignmentId ||
                                                         null,
+
                                                 }),
+
                                         }
                                     );
 
 
                                 /*
-                                 * Coba baca JSON.
+                                 * Baca JSON.
                                  */
 
                                 let data =
                                     null;
+
 
                                 try {
 
@@ -1765,12 +1890,12 @@
 
                                     data =
                                         null;
+
                                 }
 
 
                                 /*
-                                 * Kalau Laravel mengembalikan
-                                 * error validation.
+                                 * Cek response Laravel.
                                  */
 
                                 if (
@@ -1797,6 +1922,7 @@
                                     throw new Error(
                                         errorMessage
                                     );
+
                                 }
 
 
@@ -1821,16 +1947,10 @@
                                 hideThinking();
 
 
-                                /*
-                                 * Kalau Gemini/API error,
-                                 * tampilkan pesan error.
-                                 */
-
                                 showError(
                                     error.message ||
                                     'NEXA AI tidak dapat merespons saat ini.'
                                 );
-
 
                             } finally {
 
@@ -1838,13 +1958,16 @@
                                     false
                                 );
 
+
                                 /*
-                                 * Fokus kembali ke textarea.
+                                 * Fokus kembali
+                                 * ke textarea.
                                  */
 
                                 messageInput?.focus();
 
                                 scrollToBottom();
+
                             }
 
                         }
@@ -1874,6 +1997,7 @@
                             ) {
 
                                 event.preventDefault();
+
 
                                 if (
                                     !button.disabled
