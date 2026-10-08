@@ -1838,8 +1838,11 @@
                                         '/ai-assistant/ask',
                                         {
 
-                                            method:
-                                                'POST',
+                                          method:
+    'POST',
+
+credentials:
+    'include',
 
                                             headers: {
 
