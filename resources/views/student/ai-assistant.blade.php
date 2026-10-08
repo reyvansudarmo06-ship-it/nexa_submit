@@ -1330,502 +1330,76 @@
     ============================================================= --}}
 
     <script>
-
-        document.addEventListener(
-            'DOMContentLoaded',
-            function () {
-
-
-                /* =================================================
-                   ELEMENT
-                ================================================= */
-
-                const form =
-                    document.getElementById(
-                        'nexaAiForm'
-                    );
-
-                const button =
-                    document.getElementById(
-                        'nexaSendButton'
-                    );
-
-                const messageInput =
-                    document.getElementById(
-                        'nexaMessage'
-                    );
-
-                const assignmentSelect =
-                    document.getElementById(
-                        'assignmentId'
-                    );
-
-                const chatBody =
-                    document.getElementById(
-                        'nexaChatBody'
-                    );
-
-                const conversationList =
-                    document.getElementById(
-                        'conversationList'
-                    );
-
-                const thinkingContainer =
-                    document.getElementById(
-                        'thinkingContainer'
-                    );
-
-                const emptyChat =
-                    document.getElementById(
-                        'emptyChat'
-                    );
-
-                const ajaxError =
-                    document.getElementById(
-                        'ajaxError'
-                    );
-
-
-                /* =================================================
-                   CSRF
-                ================================================= */
-
-                const csrfToken =
-                    document.querySelector(
-                        'input[name="_token"]'
-                    )?.value;
-
-
-                /* =================================================
-                   SCROLL
-                ================================================= */
-
-                function scrollToBottom() {
-
-                    if (!chatBody) {
-                        return;
-                    }
-
-                    setTimeout(
-                        function () {
-
-                            chatBody.scrollTo({
-
-                                top:
-                                    chatBody.scrollHeight,
-
-                                behavior:
-                                    'smooth'
-
-                            });
-
-                        },
-                        50
-                    );
-
-                }
-
-
-                /* =================================================
-                   ESCAPE HTML
-                ================================================= */
-
-                function escapeHtml(value) {
-
-                    const div =
-                        document.createElement(
-                            'div'
-                        );
-
-                    div.textContent =
-                        value ?? '';
-
-                    return div.innerHTML;
-                }
-
-
-                /* =================================================
-                   TEXT FORMAT
-                ================================================= */
-
-                function formatMessage(value) {
-
-                    let text =
-                        escapeHtml(
-                            value ?? ''
-                        );
-
-                    /*
-                     * **teks** menjadi bold
-                     */
-                    text =
-                        text.replace(
-                            /\*\*(.*?)\*\*/g,
-                            '<strong>$1</strong>'
-                        );
-
-                    /*
-                     * ### Judul
-                     */
-                    text =
-                        text.replace(
-                            /^### (.*)$/gm,
-                            '<strong>$1</strong>'
-                        );
-
-                    /*
-                     * ## Judul
-                     */
-                    text =
-                        text.replace(
-                            /^## (.*)$/gm,
-                            '<strong>$1</strong>'
-                        );
-
-                    /*
-                     * # Judul
-                     */
-                    text =
-                        text.replace(
-                            /^# (.*)$/gm,
-                            '<strong>$1</strong>'
-                        );
-
-                    /*
-                     * Ganti newline menjadi HTML
-                     */
-                    text =
-                        text.replace(
-                            /\n/g,
-                            '<br>'
-                        );
-
-                    return text;
-                }
-
-
-                /* =================================================
-                   FORMAT CHAT HISTORY
-                ================================================= */
-
-                function formatExistingMessages() {
-
-                    const messages =
-                        document.querySelectorAll(
-                            '.js-message-content'
-                        );
-
-                    messages.forEach(
-                        function (element) {
-
-                            const originalText =
-                                element.textContent;
-
-                            element.innerHTML =
-                                formatMessage(
-                                    originalText
-                                );
-
-                        }
-                    );
-
-                }
-
-
-                /*
-                 * Format chat lama dari database
-                 */
-                formatExistingMessages();
-
-
-                /* =================================================
-                   HIDE ERROR
-                ================================================= */
-
-                function hideError() {
-
-                    if (!ajaxError) {
-                        return;
-                    }
-
-                    ajaxError.style.display =
-                        'none';
-
-                    ajaxError.innerHTML =
-                        '';
-
-                }
-
-
-                /* =================================================
-                   SHOW ERROR
-                ================================================= */
-
-                function showError(message) {
-
-                    if (!ajaxError) {
-                        return;
-                    }
-
-                    ajaxError.innerHTML =
-                        '⚠️ ' +
-                        escapeHtml(
-                            message
-                        );
-
-                    ajaxError.style.display =
-                        'block';
-
-                    scrollToBottom();
-
-                }
-
-
-                /* =================================================
-                   ADD USER MESSAGE
-                ================================================= */
-
-                function addUserMessage(
-                    message
-                ) {
-
-                    if (!conversationList) {
-                        return;
-                    }
-
-                    if (emptyChat) {
-
-                        emptyChat.style.display =
-                            'none';
-
-                    }
-
-
-                    const conversation =
-                        document.createElement(
-                            'div'
-                        );
-
-                    conversation.className =
-                        'conversation';
-
-
-                    conversation.innerHTML = `
-
-                        <div class="message user">
-
-                            <div class="message-wrap">
-
-                                <div class="message-label">
-                                    KAMU
-                                </div>
-
-                                <div class="bubble">
-                                    ${formatMessage(message)}
-                                </div>
-
-                            </div>
-
-                        </div>
-
-                    `;
-
-
-                    conversationList.appendChild(
-                        conversation
-                    );
-
-                    scrollToBottom();
-
-                }
-
-
-                /* =================================================
-                   ADD AI MESSAGE
-                ================================================= */
-
-                function addAiMessage(
-                    response
-                ) {
-
-                    if (!conversationList) {
-                        return;
-                    }
-
-
-                    const conversation =
-                        document.createElement(
-                            'div'
-                        );
-
-                    conversation.className =
-                        'conversation';
-
-
-                    conversation.innerHTML = `
-
-                        <div class="message ai">
-
-                            <div class="message-wrap">
-
-                                <div class="message-label">
-                                    NEXA AI
-                                </div>
-
-                                <div class="bubble">
-                                    ${formatMessage(response)}
-                                </div>
-
-                            </div>
-
-                        </div>
-
-                    `;
-
-
-                    conversationList.appendChild(
-                        conversation
-                    );
-
-                    scrollToBottom();
-
-                }
-
-
-                /* =================================================
-                   THINKING ON
-                ================================================= */
-
-                function showThinking() {
-
-                    if (!thinkingContainer) {
-                        return;
-                    }
-
-                    thinkingContainer.style.display =
-                        'block';
-
-                    scrollToBottom();
-
-                }
-
-
-                /* =================================================
-                   THINKING OFF
-                ================================================= */
-
-                function hideThinking() {
-
-                    if (!thinkingContainer) {
-                        return;
-                    }
-
-                    thinkingContainer.style.display =
-                        'none';
-
-                }
-
-
-                /* =================================================
-                   BUTTON STATE
-                ================================================= */
-
-                function setLoading(
-                    loading
-                ) {
-
-                    if (!button) {
-                        return;
-                    }
-
-                    button.disabled =
-                        loading;
-
-                    if (loading) {
-
-                        button.innerHTML =
-                            '⏳';
-
-                    } else {
-
-                        button.innerHTML =
-                            '➤';
-
-                    }
-
-                }
-
-
-                /* =================================================
-                   SUBMIT
-                ================================================= */
-
-                if (form) {
-
-                    form.addEventListener(
-                        'submit',
-                        function () {
-
-                            hideError();
-
-                            setLoading(true);
-
-                            showThinking();
-
-                        }
-                    );
-
-                }
-
-
-                /* =================================================
-                   ENTER UNTUK KIRIM
-                ================================================= */
-
-                if (messageInput) {
-
-                    messageInput.addEventListener(
-                        'keydown',
-                        function (event) {
-
-                            /*
-                             * Enter = kirim
-                             * Shift + Enter = baris baru
-                             */
-
-                            if (
-                                event.key === 'Enter' &&
-                                !event.shiftKey
-                            ) {
-
-                                event.preventDefault();
-
-
-                                if (
-                                    !button.disabled
-                                ) {
-
-                                    form.requestSubmit();
-
-                                }
-
-                            }
-
-                        }
-                    );
-
-                }
-
-
-                /* =================================================
-                   INITIAL SCROLL
-                ================================================= */
-
-                scrollToBottom();
-
+        document.addEventListener('DOMContentLoaded', function () {
+
+            const form = document.getElementById('nexaAiForm');
+            const button = document.getElementById('nexaSendButton');
+            const messageInput = document.getElementById('nexaMessage');
+            const chatBody = document.getElementById('nexaChatBody');
+            const thinkingContainer = document.getElementById('thinkingContainer');
+
+            function scrollToBottom() {
+                if (!chatBody) return;
+                setTimeout(function () {
+                    chatBody.scrollTo({
+                        top: chatBody.scrollHeight,
+                        behavior: 'smooth'
+                    });
+                }, 50);
             }
-        );
 
+            function escapeHtml(value) {
+                const div = document.createElement('div');
+                div.textContent = value ?? '';
+                return div.innerHTML;
+            }
+
+            function formatMessage(value) {
+                let text = escapeHtml(value ?? '');
+                text = text.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
+                text = text.replace(/^### (.*)$/gm, '<strong>$1</strong>');
+                text = text.replace(/^## (.*)$/gm, '<strong>$1</strong>');
+                text = text.replace(/^# (.*)$/gm, '<strong>$1</strong>');
+                text = text.replace(/\n/g, '<br>');
+                return text;
+            }
+
+            document.querySelectorAll('.js-message-content').forEach(function (element) {
+                element.innerHTML = formatMessage(element.textContent);
+            });
+
+            function setLoading(loading) {
+                if (!button) return;
+                button.disabled = loading;
+                button.innerHTML = loading ? '⏳' : '➤';
+            }
+
+            function showThinking() {
+                if (!thinkingContainer) return;
+                thinkingContainer.style.display = 'block';
+                scrollToBottom();
+            }
+
+            if (form) {
+                form.addEventListener('submit', function () {
+                    setLoading(true);
+                    showThinking();
+                });
+            }
+
+            if (messageInput) {
+                messageInput.addEventListener('keydown', function (event) {
+                    if (event.key === 'Enter' && !event.shiftKey) {
+                        event.preventDefault();
+                        if (button && !button.disabled && form) {
+                            form.requestSubmit();
+                        }
+                    }
+                });
+            }
+
+            scrollToBottom();
+        });
     </script>
 
 </x-app-layout>
