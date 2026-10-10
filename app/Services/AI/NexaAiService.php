@@ -26,12 +26,8 @@ class NexaAiService
 
         $key = config('services.groq.key');
 
-        // Fallback ke environment server jika config kosong.
-        if (!is_string($key) || trim($key) === '') {
-            $key = getenv('GROQ_API_KEY') ?: '';
-        }
-
-        $this->apiKey = trim((string) $key);
+        // Pastikan kunci dibaca dengan benar dari config (yang sudah mengambil dari env)
+        $this->apiKey = is_string($key) ? trim($key) : '';
     }
 
     protected function ask(string $prompt): string
@@ -39,7 +35,8 @@ class NexaAiService
         if ($this->apiKey === '') {
             throw new RuntimeException(
                 'GROQ_API_KEY kosong atau tidak terbaca. ' .
-                'Periksa Variables pada service Railway nexa-submit.'
+                'Pastikan GROQ_API_KEY sudah diset di file .env atau di variabel environment. ' .
+                'Untuk Railway: set GROQ_API_KEY di service Variables.'
             );
         }
 
