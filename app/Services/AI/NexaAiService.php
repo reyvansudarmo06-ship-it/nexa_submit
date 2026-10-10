@@ -24,14 +24,23 @@ class NexaAiService
             'openai/gpt-oss-20b'
         );
 
-        $this->apiKey = (string) config('services.groq.key', '');
+        // Ambil key dari konfigurasi Laravel terlebih dahulu.
+        $key = config('services.groq.key');
+
+        // Fallback jika konfigurasi Laravel kosong.
+        if (!is_string($key) || trim($key) === '') {
+            $key = getenv('GROQ_API_KEY') ?: '';
+        }
+
+        $this->apiKey = trim((string) $key);
     }
 
     protected function ask(string $prompt): string
     {
         if ($this->apiKey === '') {
             throw new RuntimeException(
-                'GROQ_API_KEY belum diatur di konfigurasi server.'
+                'GROQ_API_KEY tidak terbaca oleh service Laravel. ' .
+                'Pastikan variabel tersedia pada service nexa-submit.'
             );
         }
 
@@ -59,7 +68,7 @@ class NexaAiService
 
             if ($status === 429) {
                 throw new RuntimeException(
-                    'Kuota atau batas permintaan Groq tercapai. Coba lagi nanti.'
+                    'Batas permintaan Groq tercapai. Coba lagi nanti.'
                 );
             }
 
