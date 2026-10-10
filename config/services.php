@@ -1,22 +1,19 @@
+
 <?php
 
 return [
 
-    /*
-    |--------------------------------------------------------------------------
-    | Third Party Services
-    |--------------------------------------------------------------------------
-    |
-    | This file is for storing the credentials for third party services such
-    | as Mailgun, Postmark, AWS and more. This file provides the de facto
-    | location for this type of information, allowing packages to have
-    | a conventional file to locate the various service credentials.
-    |
-    */
-'openai' => [
-    'key' => env('OPENAI_API_KEY'),
-    'model' => env('OPENAI_MODEL', 'gpt-5.6-luna'),
-],
+    'ollama' => [
+        'url' => env('OLLAMA_URL', 'http://127.0.0.1:11434'),
+        'model' => env('OLLAMA_MODEL', 'qwen2.5:3b'),
+    ],
+
+    'groq' => [
+        'key' => env('GROQ_API_KEY'),
+        'model' => env('GROQ_MODEL', 'openai/gpt-oss-20b'),
+        'url' => 'https://api.groq.com/openai/v1/chat/completions',
+    ],
+
     'postmark' => [
         'token' => env('POSTMARK_TOKEN'),
     ],
