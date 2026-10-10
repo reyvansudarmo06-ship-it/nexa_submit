@@ -14,20 +14,19 @@ class NexaAiService
 
     public function __construct()
     {
-        $this->url = (string) config(
+        $this->url = trim((string) config(
             'services.groq.url',
             'https://api.groq.com/openai/v1/chat/completions'
-        );
+        ));
 
-        $this->model = (string) config(
+        $this->model = trim((string) config(
             'services.groq.model',
             'openai/gpt-oss-20b'
-        );
+        ));
 
-        // Ambil key dari konfigurasi Laravel terlebih dahulu.
         $key = config('services.groq.key');
 
-        // Fallback jika konfigurasi Laravel kosong.
+        // Fallback ke environment server jika config kosong.
         if (!is_string($key) || trim($key) === '') {
             $key = getenv('GROQ_API_KEY') ?: '';
         }
@@ -39,8 +38,14 @@ class NexaAiService
     {
         if ($this->apiKey === '') {
             throw new RuntimeException(
-                'GROQ_API_KEY tidak terbaca oleh service Laravel. ' .
-                'Pastikan variabel tersedia pada service nexa-submit.'
+                'GROQ_API_KEY kosong atau tidak terbaca. ' .
+                'Periksa Variables pada service Railway nexa-submit.'
+            );
+        }
+
+        if ($this->url === '' || $this->model === '') {
+            throw new RuntimeException(
+                'Konfigurasi URL atau model Groq kosong.'
             );
         }
 
@@ -66,20 +71,21 @@ class NexaAiService
         if (!$response->successful()) {
             $status = $response->status();
 
+            if ($status === 401 || $status === 403) {
+                throw new RuntimeException(
+                    'Groq menolak API key atau akses model. ' .
+                    'Periksa key dan izin model.'
+                );
+            }
+
             if ($status === 429) {
                 throw new RuntimeException(
                     'Batas permintaan Groq tercapai. Coba lagi nanti.'
                 );
             }
 
-            if ($status === 401 || $status === 403) {
-                throw new RuntimeException(
-                    'API key Groq tidak valid atau akses model ditolak.'
-                );
-            }
-
             throw new RuntimeException(
-                'Groq API gagal. HTTP ' . $status
+                'Permintaan Groq gagal dengan HTTP ' . $status . '.'
             );
         }
 
@@ -87,7 +93,7 @@ class NexaAiService
 
         if (!is_string($answer) || trim($answer) === '') {
             throw new RuntimeException(
-                'Groq tidak memberikan jawaban.'
+                'Groq berhasil merespons, tetapi jawabannya kosong.'
             );
         }
 
@@ -110,7 +116,7 @@ ISI JAWABAN SISWA:
 Nilai berdasarkan bukti yang tersedia. Jangan mengarang isi file.
 Berikan skor 0-100 untuk setiap kategori.
 
-Balas dengan JSON yang memiliki struktur:
+Balas hanya dengan JSON berstruktur:
 {
   "scores": {
     "instruction": 0,
@@ -189,11 +195,10 @@ PROMPT;
 
         $extractor = app(SubmissionTextExtractor::class);
 
-        $text = trim($extractor->extract(
-            $filePath,
-            mime_content_type($filePath)
-                ?: 'application/octet-stream'
-        ));
+        $mimeType = mime_content_type($filePath)
+            ?: 'application/octet-stream';
+
+        $text = trim($extractor->extract($filePath, $mimeType));
 
         if ($text === '') {
             throw new RuntimeException(
@@ -223,7 +228,7 @@ KONTEKS:
 PESAN SISWA:
 {$message}
 
-Balas dengan JSON:
+Balas hanya dengan JSON:
 {"response":"Jawaban untuk siswa"}
 PROMPT;
 
