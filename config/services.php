@@ -4,7 +4,7 @@ return [
 
    'ollama' => [
     'url' => env(
-        'OLLAMA_BASE_URL',
+        'OLLAMA_URL',
         'http://127.0.0.1:11434'
     ),
     'model' => env(
