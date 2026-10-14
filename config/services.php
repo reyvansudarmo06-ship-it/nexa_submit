@@ -2,19 +2,16 @@
 
 return [
 
-    'ollama' => [
-        'url' => env('OLLAMA_URL', 'http://127.0.0.1:11434'),
-        'model' => env('OLLAMA_MODEL', 'qwen2.5:3b'),
-    ],
-
-    'groq' => [
-        'key' => env('GROQ_API_KEY'),
-        'model' => env('GROQ_MODEL', 'openai/gpt-oss-20b'),
-        'url' => env(
-            'GROQ_API_URL',
-            'https://api.groq.com/openai/v1/chat/completions'
-        ),
-    ],
+   'ollama' => [
+    'url' => env(
+        'OLLAMA_BASE_URL',
+        'http://127.0.0.1:11434'
+    ),
+    'model' => env(
+        'OLLAMA_MODEL',
+        'qwen2.5:3b'
+    ),
+],
 
     'postmark' => [
         'token' => env('POSTMARK_TOKEN'),

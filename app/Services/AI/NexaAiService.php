@@ -10,90 +10,75 @@ class NexaAiService
 {
     protected string $url;
     protected string $model;
-    protected string $apiKey;
 
     public function __construct()
     {
-        $this->url = trim((string) config(
-            'services.groq.url',
-            'https://api.groq.com/openai/v1/chat/completions'
-        ));
+        $this->url = rtrim(
+            (string) config(
+                'services.ollama.url',
+                'http://127.0.0.1:11434'
+            ),
+            '/'
+        );
 
-        $this->model = trim((string) config(
-            'services.groq.model',
-            'openai/gpt-oss-20b'
-        ));
-
-        $key = config('services.groq.key');
-
-        // Fallback ke environment server jika config kosong.
-        if (!is_string($key) || trim($key) === '') {
-            $key = getenv('GROQ_API_KEY') ?: '';
-        }
-
-        $this->apiKey = trim((string) $key);
+        $this->model = trim(
+            (string) config(
+                'services.ollama.model',
+                'qwen2.5:3b'
+            )
+        );
     }
 
     protected function ask(string $prompt): string
     {
-        if ($this->apiKey === '') {
-            throw new RuntimeException(
-                'GROQ_API_KEY kosong atau tidak terbaca. ' .
-                'Periksa Variables pada service Railway nexa-submit.'
-            );
-        }
-
         if ($this->url === '' || $this->model === '') {
             throw new RuntimeException(
-                'Konfigurasi URL atau model Groq kosong.'
+                'URL atau model Ollama belum dikonfigurasi.'
             );
         }
 
-        $response = Http::withToken($this->apiKey)
-            ->acceptJson()
-            ->asJson()
-            ->timeout(120)
-            ->connectTimeout(15)
-            ->post($this->url, [
-                'model' => $this->model,
-                'messages' => [
-                    [
-                        'role' => 'user',
-                        'content' => $prompt,
+        try {
+            $response = Http::acceptJson()
+                ->asJson()
+                ->timeout(180)
+                ->connectTimeout(20)
+                ->post($this->url . '/api/chat', [
+                    'model' => $this->model,
+                    'messages' => [
+                        [
+                            'role' => 'user',
+                            'content' => $prompt,
+                        ],
                     ],
-                ],
-                'temperature' => 0.2,
-                'response_format' => [
-                    'type' => 'json_object',
-                ],
-            ]);
+                    'stream' => false,
+                    'format' => 'json',
+                    'options' => [
+                        'temperature' => 0.2,
+                    ],
+                ]);
+        } catch (\Throwable $e) {
+            throw new RuntimeException(
+                'Tidak bisa terhubung ke Ollama. ' .
+                'Pastikan Ollama dan Cloudflare Tunnel aktif. ' .
+                'Detail: ' . $e->getMessage(),
+                0,
+                $e
+            );
+        }
 
         if (!$response->successful()) {
-            $status = $response->status();
-
-            if ($status === 401 || $status === 403) {
-                throw new RuntimeException(
-                    'Groq menolak API key atau akses model. ' .
-                    'Periksa key dan izin model.'
-                );
-            }
-
-            if ($status === 429) {
-                throw new RuntimeException(
-                    'Batas permintaan Groq tercapai. Coba lagi nanti.'
-                );
-            }
-
             throw new RuntimeException(
-                'Permintaan Groq gagal dengan HTTP ' . $status . '.'
+                'Ollama gagal merespons dengan HTTP ' .
+                $response->status() . '. ' .
+                mb_substr($response->body(), 0, 500)
             );
         }
 
-        $answer = $response->json('choices.0.message.content');
+        $answer = $response->json('message.content');
 
         if (!is_string($answer) || trim($answer) === '') {
             throw new RuntimeException(
-                'Groq berhasil merespons, tetapi jawabannya kosong.'
+                'Ollama berhasil merespons, tetapi jawabannya kosong.'
             );
         }
 
@@ -141,7 +126,7 @@ PROMPT;
             !is_array($data['scores'] ?? null)
         ) {
             throw new RuntimeException(
-                'Format hasil analisis Groq tidak valid.'
+                'Format hasil analisis Ollama tidak valid.'
             );
         }
 
@@ -198,7 +183,9 @@ PROMPT;
         $mimeType = mime_content_type($filePath)
             ?: 'application/octet-stream';
 
-        $text = trim($extractor->extract($filePath, $mimeType));
+        $text = trim(
+            $extractor->extract($filePath, $mimeType)
+        );
 
         if ($text === '') {
             throw new RuntimeException(
@@ -240,7 +227,7 @@ PROMPT;
             trim($data['response']) === ''
         ) {
             throw new RuntimeException(
-                'Format jawaban chat Groq tidak valid.'
+                'Format jawaban chat Ollama tidak valid.'
             );
         }
 
